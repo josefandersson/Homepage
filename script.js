@@ -2,8 +2,6 @@
 
 document.body.addEventListener('keydown', ev => {
     if (document.activeElement !== elementGoogleSearch) {
-        if (ev.key.length === 1)
-            elementGoogleSearch.value += ev.key
         elementGoogleSearch.focus()
     } else {
         if (ev.key === 'Enter') {
@@ -57,6 +55,7 @@ elementGoogleSearch.addEventListener('input', () => {
 
 var completeSearchCallbacks = []
 function googleCompleteSearchCallback(data) {
+    console.log('running callback')
     if (completeSearchCallbacks.length > 0) {
         completeSearchCallbacks.splice(0, 1)[0](data)
     } else {
