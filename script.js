@@ -5,19 +5,56 @@ document.body.addEventListener('keydown', ev => {
         elementGoogleSearch.focus()
     } else {
         if (ev.key === 'Enter') {
-            location.href = `https://google.se/search?q=${elementGoogleSearch.value}`
+            if (currentlySelected) {
+                currentlySelected.target = currentlySelected ? '_blank' : '_self'
+                currentlySelected.click()
+            } else {
+                location.href = `https://google.se/search?q=${elementGoogleSearch.value}`
+            }
         } else if (ev.key === 'Escape') {
             elementGoogleSearch.value = ''
             elementGoogleCompleteSearch.innerHTML = ''
         } else if (ev.key === 'ArrowUp') {
+            ev.preventDefault()
             navigateUp()
         } else if (ev.key === 'ArrowDown') {
+            ev.preventDefault()
             navigateDown()
         }
+    }
+
+    if (realTyped) {
+        elementGoogleSearch.value = realTyped
+        realTyped = null
     }
 })
 
 
+
+
+
+
+// TIME DISPLAY
+
+const elementClock = document.getElementById('clock')
+const elementDate = document.getElementById('date')
+const elementWeek = document.getElementById('week')
+
+const days = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
+const months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december']
+
+function update() {
+    let date = new Date()
+    let day = days[date.getDay()-1]
+    let month = months[date.getMonth()]
+    let firstDayOfTheYear = new Date(date.getFullYear(),0,1);
+    let week = Math.ceil((((date - firstDayOfTheYear) / 86400000) + firstDayOfTheYear.getDay()+1)/7);
+    elementClock.innerText = date.toLocaleTimeString()
+    elementDate.innerText = `${day}, ${date.getDate()} ${month}, ${date.getFullYear()}`
+    elementWeek.innerText = `Vecka ${week}`
+}
+
+update()
 
 
 
@@ -30,28 +67,53 @@ const elementGoogleCompleteSearch = document.getElementById('googleCompleteSearc
 
 var lastGoogleSearch = 0
 var currentHints = []
-var currentlySelected = -1
-var currentlySelectedElement
+var currentlySelected
+var realTyped = ''
 elementGoogleSearch.addEventListener('input', () => {
     let query = elementGoogleSearch.value
-    if (query.length > 0) {
-        if (Date.now() - lastGoogleSearch > 500) {
-            lastGoogleSearch = Date.now()
-            googleCompleteSearch(query, data => {
-                let html = ''
-                currentHints = []
-                currentlySelected = 0
-                data[1].forEach(el => {
-                    currentHints.push(el)
-                    html += `<a href="https://google.se/search?q=${el}"><li>${el}</li></a>`
-                })
-                elementGoogleCompleteSearch.innerHTML = html
-            })
-        }
-    } else {
-        elementGoogleCompleteSearch.innerHTML = ''
-    }
+
+    if (Date.now() - lastGoogleSearch < 500)
+        return
+    
+    elementGoogleCompleteSearch.innerHTML = ''
+    
+    if (query.length === 0)
+        return
+    
+    lastGoogleSearch = Date.now()
+    googleCompleteSearch(query, data => {
+        currentHints = []
+        data[1].forEach((hint, index) => {
+            if (index >= 8)
+                return
+            
+            let a = document.createElement('a')
+            a.href = `https://google.se/search?q=${hint}`
+            a.innerHTML = `<li>${hint}</li>`
+            a.setAttribute('index', index)
+            a.onmouseenter = handleMouseEnter
+            a.onmouseleave = handleMouseLeave
+            elementGoogleCompleteSearch.appendChild(a)
+            currentHints.push(a)
+        })
+    })
 })
+
+function handleMouseEnter(ev) {
+    if (currentlySelected) {
+        if (currentlySelected === ev.target)
+            return
+        currentlySelected.classList.remove('selected')
+    }
+    currentlySelected = ev.target
+    currentlySelected.classList.add('selected')
+}
+
+function handleMouseLeave(ev) {
+    ev.target.classList.remove('selected')
+    if (currentlySelected === ev.target)
+            currentlySelected = null
+}
 
 var completeSearchCallbacks = []
 function googleCompleteSearchCallback(data) {
@@ -74,21 +136,49 @@ function googleCompleteSearch(query, callback) {
 }
 
 function navigateUp() {
-    if (-1 < currentlySelected) {
-        currentlySelectedElement.classList.remove('selected')
-        if (currentlySelected === 0) {
-            // No one is selected anymore
-        } else {
-            if (currentlySelected < currentHints.length-1) {
-                currentlySelected--
-                document.querySelector(`li:nth-child(${currentlySelected+1})`)
-            }
-        }
+    if (currentHints.length === 0) {
+        return
+    }
+
+    let index = -1
+    if (currentlySelected) {
+        index = parseInt(currentlySelected.getAttribute('index'))
+    }
+
+    if (index---1 >= 0) {
+        if (currentlySelected)
+            currentlySelected.classList.remove('selected')
+        currentlySelected = currentHints[index]
+        currentlySelected.classList.add('selected')
+        if (!realTyped)
+            realTyped = elementGoogleSearch.value
+        elementGoogleSearch.value = currentlySelected.value
+    } else {
+        // CANT GO ANY FURTHER
     }
 }
 
 function navigateDown() {
+    if (currentHints.length === 0) {
+        return
+    }
 
+    let index = -1
+    if (currentlySelected) {
+        index = parseInt(currentlySelected.getAttribute('index'))
+    }
+
+    if (index+++1 <= currentHints.length) {
+        if (currentlySelected)
+            currentlySelected.classList.remove('selected')
+        currentlySelected = currentHints[index]
+        currentlySelected.classList.add('selected')
+        if (!realTyped)
+            realTyped = elementGoogleSearch.value
+        elementGoogleSearch.value = currentlySelected.value
+    } else {
+        // CANT GO ANY FURTHER
+    }
 }
 
 
