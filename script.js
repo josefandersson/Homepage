@@ -123,11 +123,14 @@ function initEventListeners() {
             }
         } else if (ev.key === 'Enter') {
             if (selected) {
-                currentlySelected.target = currentlySelected ? '_blank' : '_self'
-                currentlySelected.click()
+                selected.target = ev.ctrlKey ? '_blank' : '_self'
+                selected.click()
             } else {
                 if (ev.ctrlKey) {
-                    window.open(`https://google.se/search?q=${elSearch.value}`, '_blank').focus()
+                    let a = document.createElement('a')
+                    a.href = `https://google.se/search?q=${elSearch.value}`
+                    a.target = '_blank'
+                    a.click()
                 } else {
                     location.href = `https://google.se/search?q=${elSearch.value}`
                 }
@@ -144,12 +147,17 @@ function initEventListeners() {
     elSearch.addEventListener('input', () => {
         let query = elSearch.value
     
-        if (Date.now() - lastSearch <= GOOGLE_SEARCH_COOLDOWN
-                || query.length === 0) {
+        if (Date.now() - lastSearch <= GOOGLE_SEARCH_COOLDOWN) {
             return
         }
 
-        // TODO: deselect complete selection
+        if (query.length === 0) {
+            completeCount = 0
+            for (let i = 0; i < MAX_COMPLETE_STRINGS; i++) {
+                completeElements[i].setAttribute('hidden', true)
+            }
+            return
+        }
         
         lastSearch = Date.now()
         googleCompleteSearch(query, strings => {

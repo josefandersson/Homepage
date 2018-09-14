@@ -20,10 +20,10 @@ a { color: #CECFD1; }
 }
 
 .drawArea > div.clear > svg {
-    fill: #e2d065;
+    fill: #d0c792;
 }
 .drawArea > div.clear:hover > svg {
-    fill: #f5db3f;
+    fill: #efe192;
 }
 .drawArea > div.showing {
     animation: fadein .1s;
