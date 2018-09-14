@@ -6,16 +6,39 @@ body {
     background-image: url(background1.jpg)
 }
 
-a {
-    color: #CECFD1;
+a { color: #CECFD1; }
+
+.breaker { width: 100%; height: 1px; background-color: #CECFD1; }
+
+
+.drawArea > div.clear {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    cursor: pointer;
+    display: none;
 }
 
-.breaker {    
-    width: 100%;
-    height: 1px;
-    background-color: #CECFD1;
+.drawArea > div.clear > svg {
+    fill: #e2d065;
+}
+.drawArea > div.clear:hover > svg {
+    fill: #f5db3f;
+}
+.drawArea > div.showing {
+    animation: fadein .1s;
+    display: inherit;
 }
 
+.drawArea > canvas {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: #00000000;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
 
 
 .dateArea {
@@ -28,12 +51,14 @@ h1 {
     margin-bottom: 0;
     margin-top: 50px;
     font-family: 'Roboto Mono', monospace;
+    display:inline-block; 
 }
 
 h2 {
     font-size: 20px;
     font-weight: 300;
     margin:0;
+    display:inline-block; 
 }
 
 
